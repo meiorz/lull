@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="440" viewBox="0 0 1440 440">
+  <rect width="1440" height="440" fill="#ffffff" />
+  <g font-family="'Segoe UI', Arial, sans-serif" font-size="26" fill="#27313c">
+    <text x="60" y="118">Light</text>
+    <text x="60" y="298">Dark</text>
+    <text x="150" y="400">0 s</text>
+    <text x="760" y="400">20 s</text>
+    <text x="1340" y="400">40 s</text>
+  </g>
+  <g stroke="#b9c2cc" stroke-width="2">
+    <path d="M170 350h1210" />
+    <path d="M170 60v290" />
+    <path d="M780 60v290" stroke-dasharray="8 8" />
+  </g>
+  <path d="M170 290h40v-180h40v180h60v-180h40v180h430h40v-180h40v180h60v-180h40v180h390" fill="none" stroke="#1d4f91" stroke-width="6" stroke-linejoin="round" />
+</svg>

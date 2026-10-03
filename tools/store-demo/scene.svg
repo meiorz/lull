@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="600" viewBox="0 0 1440 600">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6f9bd1" />
+      <stop offset="0.6" stop-color="#f1c39a" />
+      <stop offset="1" stop-color="#f8dfc2" />
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6c9cbd" />
+      <stop offset="1" stop-color="#2c5674" />
+    </linearGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff3c4" stop-opacity="0.75" />
+      <stop offset="1" stop-color="#fff3c4" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect width="1440" height="600" fill="url(#sky)" />
+  <circle cx="1090" cy="318" r="64" fill="#fff0d2" />
+  <g fill="#ffffff" opacity="0.7">
+    <ellipse cx="820" cy="120" rx="150" ry="26" />
+    <ellipse cx="930" cy="146" rx="110" ry="20" />
+    <ellipse cx="1260" cy="92" rx="130" ry="22" />
+    <ellipse cx="520" cy="190" rx="90" ry="16" />
+  </g>
+  <rect y="372" width="1440" height="228" fill="url(#sea)" />
+  <g fill="none" stroke="#e4eef5" stroke-width="3" stroke-linecap="round" opacity="0.55">
+    <path d="M620 420q30-12 60 0t60 0" />
+    <path d="M900 470q30-12 60 0t60 0t60 0" />
+    <path d="M1180 430q30-12 60 0t60 0" />
+    <path d="M700 530q30-12 60 0t60 0t60 0" />
+    <path d="M1080 550q30-12 60 0t60 0" />
+  </g>
+  <path d="M1000 372h180l-22 12h-136z" fill="#fff0d2" opacity="0.6" />
+  <path d="M0 600V392c90-46 210-70 318-52 96 16 150 62 196 118l52 142z" fill="#51704f" />
+  <path d="M0 600V452c110-30 230-26 330 18 70 30 118 76 150 130z" fill="#3d5a41" />
+  <path d="M292 250 1180 150v150z" fill="url(#beam)" />
+  <path d="M236 352 250 214h36l14 138z" fill="#f4f1ea" />
+  <path d="M241 300h54l3 26h-60zM246 248h44l3 26h-50z" fill="#c6533c" />
+  <rect x="244" y="196" width="48" height="20" rx="3" fill="#2c3944" />
+  <rect x="251" y="200" width="34" height="13" fill="#ffe7a3" />
+  <path d="M248 196h40l-20-22z" fill="#2c3944" />
+  <rect x="222" y="352" width="92" height="12" rx="4" fill="#d9d4c8" />
+  <g transform="translate(1250 400)">
+    <path d="M0 22h70l-12 16H12z" fill="#2c3944" />
+    <path d="M34 20V-36l30 56z" fill="#f4f1ea" />
+    <path d="M30 20V-22L8 20z" fill="#e3ded2" />
+  </g>
+</svg>

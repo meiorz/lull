@@ -1,0 +1,36 @@
+Lull gives every website the same soft dark theme. It was designed with autistic people and people with ADHD in mind: nothing flashes, nothing glares, and less moves.
+
+WHAT IT DOES
+
+- Dark from the first moment. Pages are dark before they appear, so there is no white flash while they load.
+- Soft contrast. Backgrounds are dark grey, not black. Text is off-white, not white. It is clear to read and does not glow.
+- Muted colour. Colours keep their hue, so a warning is still reddish and a link is still bluish, but none of them is vivid.
+- Calm pictures. Photos are dimmed a little. Pictures that are mostly white, such as diagrams, are dimmed more. Dark logos are flipped so they stay readable. Photos are never turned into negatives.
+- The same look everywhere. Every site gets the same background, text and border colours.
+- Less movement. Stops style-sheet animations and transitions, pauses video and audio that start by themselves, and freezes or hides GIFs until you ask for them.
+- Reading ruler (optional). Shades the page except the lines near the pointer.
+- Sites that are already dark are only softened, or left alone if you prefer.
+
+FEW SETTINGS
+
+Three sliders (text brightness, colour strength, picture brightness), three switches and four palettes. One switch turns Lull off for a site, and the page goes back to its own colours without reloading. The shortcut is Alt+Shift+L.
+
+GOOD TO KNOW
+
+- Printing uses the page's original colours.
+- If one site looks wrong, open Lull on it, choose More, then Simple invert.
+- Hold Alt and click a paused GIF to play it.
+- After installing, reload tabs that were already open.
+
+WHAT IT CANNOT DO
+
+- Change the browser's own pages (new tab, settings, the extension store) or its PDF viewer. No extension can.
+- Dim background pictures that a site sets in its style sheet.
+- Stop animation that a page runs from script.
+- Fix text that a site prints on top of a bright photo.
+
+PRIVACY
+
+No account, no analytics, no ads and no remote server. Your settings stay in your browser. Lull asks for access to all sites because it has to restyle whichever site you visit; it reads style sheets and pictures, not what you type.
+
+Source code: https://github.com/meiorz/lull
