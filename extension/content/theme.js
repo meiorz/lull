@@ -428,19 +428,46 @@
 
   // ---- style sheets on other origins --------------------------------------
 
+  // First ask the way a page would: a cross-origin request that the host has to permit.
+  // That request is subject to every protection the browser gives pages, and most public
+  // CDNs permit it.
+  const corsRefused = new Set(); // hosts that said no: asking again only fills the console
+  function readAsPage(href) {
+    let host;
+    try {
+      host = new URL(href).host;
+    } catch {
+      return Promise.resolve(null);
+    }
+    if (corsRefused.has(host)) return Promise.resolve(null);
+    return fetch(href, { mode: 'cors', credentials: 'omit', cache: 'force-cache' }).then(
+      (res) => (res.ok && /text\/css/i.test(res.headers.get('content-type') || '') ? res.text() : null),
+      () => {
+        corsRefused.add(host);
+        return null;
+      },
+    );
+  }
+
+  // Only when the host does not permit it is the service worker asked, and the worker
+  // refuses addresses a page should not be able to reach through Lull.
+  function readAsWorker(href) {
+    return new Promise((resolve) => {
+      try {
+        chrome.runtime.sendMessage({ type: 'css', url: href }, (text) => {
+          void chrome.runtime.lastError;
+          resolve(typeof text === 'string' ? text : null);
+        });
+      } catch {
+        resolve(null);
+      }
+    });
+  }
+
   function fetchCss(href) {
     let p = cssCache.get(href);
     if (!p) {
-      p = new Promise((resolve) => {
-        try {
-          chrome.runtime.sendMessage({ type: 'css', url: href }, (text) => {
-            void chrome.runtime.lastError;
-            resolve(typeof text === 'string' ? text : null);
-          });
-        } catch {
-          resolve(null);
-        }
-      });
+      p = readAsPage(href).then((text) => (text != null ? text : readAsWorker(href)));
       cssCache.set(href, p);
     }
     return p;
@@ -766,16 +793,11 @@
     const sheet = el.sheet;
     const before = ownerSheet.get(el);
     if (before && before !== sheet) sheets.delete(before);
-    if (sheet) {
-      ownerSheet.set(el, sheet);
-      run(processSheet(sheet, el, el.getRootNode(), true));
-    } else if (linkIsSheet(el) && el.href && !el.crossOrigin) {
-      // Still loading. If it is on another origin, start fetching its text now so the
-      // override is ready by the time the browser applies the original.
-      try {
-        if (new URL(el.href).origin !== location.origin) fetchCss(el.href);
-      } catch {}
-    }
+    // A link that has not loaded is left alone: Lull only ever asks for a style sheet the
+    // browser has already let this page load. Its load event brings it back here.
+    if (!sheet) return;
+    ownerSheet.set(el, sheet);
+    run(processSheet(sheet, el, el.getRootNode(), true));
   }
 
   function* scanScope(root) {
@@ -793,7 +815,6 @@
         yield* processSheet(sheet, owner, root, false);
       }
       for (const sheet of root.adoptedStyleSheets) yield* processSheet(sheet, null, root, false);
-      for (const link of root.querySelectorAll('link[rel~="stylesheet" i]')) if (!link.sheet) handleOwner(link);
       yield* scanInline(root);
     }
     findShadows(root === document ? document.documentElement : root);

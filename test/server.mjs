@@ -9,6 +9,8 @@ import { dirname, join } from 'node:path';
 const here = dirname(fileURLToPath(import.meta.url));
 export const SITE = 8931;
 export const CDN = 8932;
+// What the servers saw, for tests that check which requests were (not) made.
+export const seen = { hits: {}, hugeSent: 0, hugeFinished: false };
 
 function png(w, h, paint) {
   const raw = Buffer.alloc((w * 4 + 1) * h);
@@ -92,10 +94,29 @@ const CSS = {
     .cdn-broken { background: var(--cdn-bg) url(photo.png); background-repeat: repeat-x; border: 2px solid var(--cdn-ink); border-top-width: 0; }`,
 };
 
+Object.assign(CSS, {
+  '/local.css': '.local-card { background: #ffffff; color: #111111; }',
+  '/after-redirect.css': '.redir-card { background: #ffffff; color: #111111; }',
+});
+const CORS_CSS = '.cors-card { background: #ffffff; color: #111111; }';
+// A PNG header that claims 30000 x 30000 pixels, with nothing behind it.
+const BOMB = (() => {
+  const b = Buffer.alloc(33);
+  Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]).copy(b);
+  b.writeUInt32BE(13, 8);
+  b.write('IHDR', 12);
+  b.writeUInt32BE(30000, 16);
+  b.writeUInt32BE(30000, 20);
+  b[24] = 8;
+  b[25] = 6;
+  return b;
+})();
+
 function handler(port) {
   return async (req, res) => {
     const url = new URL(req.url, `http://localhost:${port}`);
     const path = url.pathname;
+    seen.hits[path] = (seen.hits[path] || 0) + 1;
     const wait = Number(url.searchParams.get('ms')) || 0;
     if (wait) await new Promise((r) => setTimeout(r, wait));
     const send = (type, body, extra = {}) => {
@@ -109,6 +130,32 @@ function handler(port) {
     if (path === '/product.jpg') return send('image/png', IMAGES['/bright.png'], { 'access-control-allow-origin': '*' });
     if (path === '/product-private.jpg') return send('image/png', IMAGES['/bright.png']);
     if (path === '/anim.gif') return send('image/gif', GIF);
+    if (path === '/anim-cors.gif') return send('image/gif', GIF, { 'access-control-allow-origin': '*' });
+    if (path === '/bomb.png') return send('image/png', BOMB);
+    if (path === '/cors.css') return send('text/css', CORS_CSS, { 'access-control-allow-origin': '*' });
+    if (path === '/redir.css' || path === '/redir-cors.css') {
+      const cors = path === '/redir-cors.css';
+      res.writeHead(302, { location: cors ? '/cors.css' : '/after-redirect.css', ...(cors ? { 'access-control-allow-origin': '*' } : {}) });
+      return res.end();
+    }
+    if (path === '/huge.css') {
+      // 40 MB with no Content-Length: a download that must be cut off, not trusted.
+      res.writeHead(200, { 'content-type': 'text/css' });
+      const chunk = Buffer.alloc(256 * 1024, 'a');
+      let sent = 0;
+      const pump = () => {
+        while (sent < 40 * 1024 * 1024) {
+          sent += chunk.length;
+          if (!res.write(chunk)) return void res.once('drain', pump);
+        }
+        res.end();
+      };
+      res.on('close', () => {
+        seen.hugeSent = sent;
+        seen.hugeFinished = res.writableFinished;
+      });
+      return pump();
+    }
     if (path === '/tone.wav') return send('audio/wav', WAV);
     if (path === '/formula.svg') return send('image/svg+xml', SVG);
     if (path.endsWith('.html')) {

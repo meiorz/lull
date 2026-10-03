@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Lull fixture: a page on a public address</title>
+    <style>
+      body { margin: 16px; font: 16px/1.5 sans-serif; background: #ffffff; color: #111111; }
+      div { padding: 8px; }
+    </style>
+    <!-- another public host that does not allow cross-origin reads: the worker may fetch it -->
+    <link rel="stylesheet" href="http://cdn.example:8932/cdn.css" />
+    <!-- an address on this computer: a public page must not be able to reach it through Lull -->
+    <link rel="stylesheet" href="http://127.0.0.1:8932/local.css" />
+    <!-- redirects somewhere else: the worker must not follow -->
+    <link rel="stylesheet" href="http://cdn.example:8932/redir.css" />
+    <!-- redirects, but the host lets pages read it, so no worker is needed -->
+    <link rel="stylesheet" href="http://cdn.example:8932/redir-cors.css" />
+  </head>
+  <body>
+    <div id="cdn-card" class="cdn-card">public host, read by the worker</div>
+    <div id="local-card" class="local-card">local address</div>
+    <div id="redir-card" class="redir-card">redirecting style sheet</div>
+    <div id="cors-card" class="cors-card">redirecting style sheet that pages may read</div>
+    <img id="img-local" src="http://127.0.0.1:8932/logo-dark.png" width="96" height="32" alt="" />
+  </body>
+</html>

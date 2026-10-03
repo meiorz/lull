@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { startServers, SITE } from './server.mjs';
+import { startServers, SITE, CDN, seen } from './server.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const EXT = join(here, '..', 'extension');
@@ -95,7 +95,12 @@ const browser = await puppeteer.launch({
   headless: true,
   pipe: true,
   enableExtensions: [EXT],
-  args: ['--autoplay-policy=no-user-gesture-required', '--window-size=1100,900'],
+  args: [
+    '--autoplay-policy=no-user-gesture-required',
+    '--window-size=1100,900',
+    // Two names that look public but lead to the test servers.
+    '--host-resolver-rules=MAP public.example 127.0.0.1, MAP cdn.example 127.0.0.1',
+  ],
   defaultViewport: { width: 1100, height: 900 },
 });
 
@@ -134,7 +139,7 @@ try {
   console.log('\nLight page');
   await page.goto(`http://localhost:${SITE}/light.html`);
   await ready();
-  await page.waitForFunction(() => document.querySelector('#img-gif').hasAttribute('data-lull-gif'), { timeout: 8000 }).catch(() => {});
+  await page.waitForFunction(() => document.querySelector('#img-gif').hasAttribute('data-lull-gif') && document.querySelector('#img-gif-cors').hasAttribute('data-lull-gif'), { timeout: 8000 }).catch(() => {});
   await sleep(300);
 
   check('page background is dark', isDark(await style('html')) && isDark(await style('body')), await style('body'));
@@ -195,7 +200,8 @@ try {
   check('black SVG picture is inverted', (await attr('#img-svg', 'data-lull-img')) === 'invert', await attr('#img-svg', 'data-lull-img'));
   check('white photo on a host that allows reads is dimmed more', (await attr('#img-product', 'data-lull-img')) === 'bright', await attr('#img-product', 'data-lull-img'));
   check('large photo on a host that forbids reads is left alone', (await attr('#img-private', 'data-lull-img')) === null, await attr('#img-private', 'data-lull-img'));
-  check('GIF is frozen', (await attr('#img-gif', 'data-lull-gif')) === '' && /^data:image\/png/.test(await attr('#img-gif', 'src')), await attr('#img-gif', 'src'));
+  check('GIF on a host that allows reads is frozen on its first frame', (await attr('#img-gif-cors', 'data-lull-gif')) === '' && /^data:image\/png/.test(await attr('#img-gif-cors', 'src')), await attr('#img-gif-cors', 'src'));
+  check('GIF on a host that forbids reads is hidden, and its pixels are not handed to the page', (await attr('#img-gif', 'data-lull-gif')) === 'hidden' && /anim\.gif$/.test(await attr('#img-gif', 'src')), `${await attr('#img-gif', 'data-lull-gif')} ${await attr('#img-gif', 'src')}`);
   check('pictures are dimmed', /brightness/.test(await style('#img-photo', 'filter')), await style('#img-photo', 'filter'));
 
   check('animations are stopped', parseFloat(await style('#spin', 'animationDuration')) < 0.001, await style('#spin', 'animationDuration'));
@@ -248,7 +254,7 @@ try {
   check('switching off restores a split shorthand exactly', /255, 255, 255/.test(await style('#broken', 'backgroundImage')) && (await style('#broken', 'backgroundRepeat')) === 'no-repeat' && (await style('#broken-border', 'borderTopWidth')) === '0px', `${await style('#broken', 'backgroundImage')} ${await style('#broken', 'backgroundRepeat')}`);
   check('switching off removes Lull attributes', (await page.evaluate(() => document.querySelectorAll('[data-lull-s],[data-lull-p],[data-lull-img],[data-lull-gif],.lull-x').length)) === 0);
   check('switching the top site off also switches off its frames', lum(await frameBg()) > 0.9, await frameBg());
-  check('switching off unfreezes the GIF', /anim\.gif$/.test(await attr('#img-gif', 'src')), await attr('#img-gif', 'src'));
+  check('switching off unfreezes the GIFs', /anim\.gif$/.test(await attr('#img-gif', 'src')) && /anim-cors\.gif$/.test(await attr('#img-gif-cors', 'src')), `${await attr('#img-gif', 'src')} ${await attr('#img-gif-cors', 'src')}`);
 
   await page.reload();
   await sleep(800);
@@ -258,6 +264,70 @@ try {
   await setSettings({});
   await sleep(500);
   check('switching the site back on themes it without a reload', isDark(await style('#site-card')) && isDark(await style('#cdn-card')) && isDark(await style('#inline')), `${await style('#site-card')} ${await style('#cdn-card')}`);
+
+  // ---- what the service worker will and will not fetch ------------------------------
+  console.log('\nRequests through the service worker');
+  const policy = await worker.evaluate(() => {
+    const tab = { id: 1 };
+    const from = (origin) => ({ id: chrome.runtime.id, tab, origin, url: origin + '/' });
+    const pub = from('https://news.example');
+    const plain = from('http://news.example');
+    const local = from('http://localhost:3000');
+    return {
+      publicToPublic: mayFetch('https://cdn.example/a.css', pub),
+      secureToPlain: mayFetch('http://cdn.example/a.css', pub),
+      toLoopback: mayFetch('http://127.0.0.1/a.css', plain),
+      toLoopbackNumber: mayFetch('http://2130706433/a.css', plain),
+      toLocalhost: mayFetch('http://localhost:8080/a.css', plain),
+      toPrivate10: mayFetch('http://10.1.2.3/a.css', plain),
+      toPrivate172: mayFetch('http://172.20.0.1/a.css', plain),
+      toPrivate192: mayFetch('http://192.168.1.1/reboot', plain),
+      toLinkLocal: mayFetch('http://169.254.169.254/latest/meta-data', plain),
+      toIpv6Loopback: mayFetch('http://[::1]/a.css', plain),
+      toIpv6Private: mayFetch('http://[fd00::1]/a.css', plain),
+      toMappedIpv4: mayFetch('http://[::ffff:192.168.1.1]/a.css', plain),
+      toSingleLabel: mayFetch('http://router/a.css', plain),
+      toDotLocal: mayFetch('http://printer.local/a.css', plain),
+      notPrivate172: mayFetch('http://172.32.0.1/a.css', plain),
+      localToLocal: mayFetch('http://127.0.0.1:8932/a.css', local),
+      withPassword: mayFetch('https://user:pw@cdn.example/a.css', pub),
+      otherScheme: mayFetch('ftp://cdn.example/a.css', pub),
+      fileScheme: mayFetch('file:///C:/secret.css', local),
+      notFromATab: mayFetch('https://cdn.example/a.css', { id: chrome.runtime.id, origin: 'https://news.example' }),
+      noRequester: mayFetch('https://cdn.example/a.css', { id: chrome.runtime.id, tab, origin: 'null', url: 'about:blank' }),
+    };
+  });
+  const allowed = ['publicToPublic', 'notPrivate172', 'localToLocal'];
+  for (const [name, value] of Object.entries(policy)) {
+    check(`worker policy: ${name} is ${allowed.includes(name) ? 'allowed' : 'refused'}`, value === allowed.includes(name), String(value));
+  }
+
+  const started = Date.now();
+  const huge = await worker.evaluate((url) => fetchCss(url), `http://127.0.0.1:${CDN}/huge.css`);
+  await sleep(300);
+  check('an endless style sheet is cut off at the size limit', huge === null && !seen.hugeFinished && seen.hugeSent < 20 * 1024 * 1024 && Date.now() - started < 8000, `result ${huge === null ? 'null' : 'text'}, server sent ${seen.hugeSent} bytes, finished ${seen.hugeFinished}`);
+  const bomb = await worker.evaluate((url) => analyzeImage(url), `http://127.0.0.1:${CDN}/bomb.png`);
+  check('a picture that claims 30000 x 30000 pixels is not decoded', bomb && bomb.v === 'ok', JSON.stringify(bomb));
+  const sizes = await worker.evaluate(() => {
+    const gif = new Uint8Array(40);
+    gif.set([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 1, 0, 1, 0, 0, 0, 0]); // 1 x 1 screen, no colour table
+    gif.set([0x2c, 0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff], 13); // first frame claims 65535 x 65535
+    const jpeg = new Uint8Array(40);
+    jpeg.set([0xff, 0xd8, 0xff, 0xe0, 0, 4, 0, 0, 0xff, 0xc0, 0, 11, 8, 0x12, 0x34, 0x56, 0x78]);
+    return { gif: imageSize(gif), jpeg: imageSize(jpeg), unknown: imageSize(new Uint8Array(40)) };
+  });
+  check('picture sizes are read from the header (GIF frame, JPEG, unknown format)', sizes.gif[0] === 65535 && sizes.gif[1] === 65535 && sizes.jpeg[0] === 0x5678 && sizes.jpeg[1] === 0x1234 && sizes.unknown === null, JSON.stringify(sizes));
+
+  await page.goto(`http://public.example:${SITE}/public.html`);
+  await ready();
+  await sleep(1200);
+  check('public page: style sheet on another public host is themed', isDark(await style('#cdn-card')), await style('#cdn-card'));
+  check('public page: style sheet on a local address is not fetched for it', lum(await style('#local-card')) > 0.9, await style('#local-card'));
+  check('public page: picture on a local address is not analysed for it', (await attr('#img-local', 'data-lull-img')) === null, await attr('#img-local', 'data-lull-img'));
+  check('public page: redirecting style sheet is not followed by the worker', lum(await style('#redir-card')) > 0.9 && seen.hits['/after-redirect.css'] === 1, `${await style('#redir-card')}, redirect target requested ${seen.hits['/after-redirect.css']} time(s)`);
+  check('public page: redirecting style sheet the host lets pages read is themed', isDark(await style('#cors-card')), await style('#cors-card'));
+  const readable = await page.evaluate(() => [...document.querySelectorAll('style.lull-x')].map((s) => s.textContent).join(' '));
+  check('public page: nothing from the local or redirected sheets reaches the page', !/local-card|redir-card/.test(readable), readable.slice(0, 200));
 
   // ---- no white flash -------------------------------------------------------------
   console.log('\nFlash test (every painted frame is recorded)');

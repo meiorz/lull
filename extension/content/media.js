@@ -52,7 +52,11 @@
           `[data-lull-img="bright"]{filter:brightness(${+(dim * 0.78).toFixed(3)})!important}`;
       }
     }
-    css += '[data-lull-gif]{outline:2px dashed var(--lull-bd,#777)!important;outline-offset:-2px!important;cursor:pointer}';
+    css +=
+      '[data-lull-gif]{outline:2px dashed var(--lull-bd,#777)!important;outline-offset:-2px!important;cursor:pointer}' +
+      // An animation Lull may not read cannot be replaced by a still frame, so its picture
+      // is moved out of its own box instead. The box stays, and can still be clicked.
+      '[data-lull-gif="hidden"]{object-fit:none!important;object-position:-99999px -99999px!important}';
     theme.ownSheet('media').replaceSync(css);
     theme.ownSheet('motion').replaceSync(S.stillness ? STILL : '');
   }
@@ -118,16 +122,18 @@
         canvas.getContext('2d').drawImage(img, 0, 0);
         still = canvas.toDataURL('image/png');
       }
-      return { v, gif: wantStill, still };
+      return { v, still };
     } catch {
       return null;
     }
   }
 
+  // The service worker answers with a verdict only. It never returns pixels, because that
+  // would let a page read a picture the browser does not let it read.
   function ask(url) {
     return new Promise((resolve) => {
       try {
-        chrome.runtime.sendMessage({ type: 'img', url, still: S.pauseMedia }, (res) => {
+        chrome.runtime.sendMessage({ type: 'img', url }, (res) => {
           void chrome.runtime.lastError;
           resolve(res || null);
         });
@@ -153,10 +159,14 @@
     verdicts.set(url, res);
   }
 
+  // A result is { v, gif, still, noStill }: the verdict, whether the picture is a GIF, its
+  // first frame if Lull was able to read one, and whether it tried and could not.
   function applyVerdict(img, res) {
     if (opts.colors && res.v && res.v !== 'ok') img.setAttribute('data-lull-img', res.v);
     else img.removeAttribute('data-lull-img');
-    if (res.still && S.pauseMedia && !played.has(img)) freeze(img, res.still);
+    if (!S.pauseMedia || played.has(img)) return;
+    if (res.still) freeze(img, res.still);
+    else if (res.gif && res.noStill) hide(img);
   }
 
   function examine(img) {
@@ -164,24 +174,29 @@
     if (!img.complete || !img.naturalWidth) return; // its load event will bring it back here
     const url = img.currentSrc || img.src;
     if (!url) return;
-    const wantStill = S.pauseMedia && GIF.test(url) && !played.has(img);
+    const isGif = GIF.test(url);
+    const wantStill = S.pauseMedia && isGif && !played.has(img);
     const wantVerdict = opts.colors && img.clientWidth >= 12 && img.clientHeight >= 12;
     const known = verdicts.get(url);
-    if (known && (!wantStill || known.still || known.gif === false)) return applyVerdict(img, known);
+    if (known && (!wantStill || known.still || known.noStill)) return applyVerdict(img, known);
     if (!wantStill && !wantVerdict) {
       img.removeAttribute('data-lull-img');
       return;
     }
+    const readable = (res) => ({ v: res.v, gif: isGif, still: res.still, noStill: wantStill && !res.still });
     const direct = readDirect(img, wantStill);
     if (direct) {
-      remember(url, direct);
-      return applyVerdict(img, direct);
+      remember(url, readable(direct));
+      return applyVerdict(img, verdicts.get(url));
     }
     if (!/^https?:/i.test(url)) return;
-    const viaWorker = wantStill || isArtwork(img, url);
+    const unreadable = () => {
+      if (isArtwork(img, url)) return ask(url).then((ans) => ans && { v: ans.v, gif: isGif || !!ans.gif, noStill: true });
+      return wantStill ? { v: 'ok', gif: true, noStill: true } : null;
+    };
     waiting.push(() =>
       readWithCors(url, wantStill)
-        .then((res) => res || (viaWorker ? ask(url) : null))
+        .then((res) => (res ? readable(res) : unreadable()))
         .then((res) => {
           if (!res || !on) return;
           remember(url, res);
@@ -213,6 +228,14 @@
     if (!img.title) img.title = 'Animation paused by Lull. Hold Alt and click to play it.';
   }
 
+  // For an animation whose pixels Lull may not read: hide it rather than let it run.
+  function hide(img) {
+    if (frozen.has(img)) return;
+    frozen.set(img, { hidden: true, title: img.getAttribute('title') });
+    img.setAttribute('data-lull-gif', 'hidden');
+    if (!img.title) img.title = 'Animation hidden by Lull. Hold Alt and click to show it.';
+  }
+
   function thaw(img, byPerson) {
     const was = frozen.get(img);
     if (!was) return;
@@ -220,6 +243,7 @@
     if (byPerson) played.add(img);
     img.removeAttribute('data-lull-gif');
     if (was.title == null) img.removeAttribute('title');
+    if (was.hidden) return;
     if (was.srcset != null) img.setAttribute('srcset', was.srcset);
     if (was.src != null) img.setAttribute('src', was.src);
   }
@@ -238,9 +262,12 @@
     const was = frozen.get(t);
     if (was) {
       if (t.getAttribute('src') === was.still) return;
-      // The page gave the picture a new source while it was frozen.
-      frozen.delete(t);
-      t.removeAttribute('data-lull-gif');
+      // The page gave the picture a new source while it was frozen or hidden.
+      if (was.hidden) thaw(t, false);
+      else {
+        frozen.delete(t);
+        t.removeAttribute('data-lull-gif');
+      }
     }
     if (visible.has(t)) examine(t);
   }
