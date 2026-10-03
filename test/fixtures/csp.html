@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Lull fixture: strict Content-Security-Policy</title>
+    <link rel="stylesheet" href="/site.css" />
+    <link rel="stylesheet" href="{{CDN}}/cdn.css" />
+  </head>
+  <body>
+    <h1>Inline styles are forbidden on this page</h1>
+    <div id="site-card" class="site-card">same-origin sheet</div>
+    <div id="cdn-card" class="cdn-card">cross-origin sheet</div>
+    <img id="img-logo-x" src="{{CDN}}/logo-dark.png" width="96" height="32" alt="" />
+  </body>
+</html>

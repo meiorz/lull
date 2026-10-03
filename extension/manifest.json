@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "Lull - calm dark mode",
+  "short_name": "Lull",
+  "version": "1.0.0",
+  "description": "A soft, predictable dark theme for every website. No white flashes, no harsh contrast, no moving distractions.",
+  "minimum_chrome_version": "120",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["storage", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Lull",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "defaults.js",
+        "content/color.js",
+        "content/analyze.js",
+        "content/theme.js",
+        "content/media.js",
+        "content/main.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_origin_as_fallback": true
+    }
+  ],
+  "commands": {
+    "toggle-site": {
+      "suggested_key": {
+        "default": "Alt+Shift+L"
+      },
+      "description": "Turn Lull on or off for the current site"
+    }
+  }
+}

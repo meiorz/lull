@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Lull fixture: light page</title>
+    <link rel="stylesheet" href="/site.css" />
+    <link rel="stylesheet" href="{{CDN}}/cdn.css" />
+    <style>
+      :root {
+        --bg: #ffffff;
+        --ink: #111111;
+        --line: #cccccc;
+        --alias: var(--ink);
+        --card: 0 0% 100%;
+        --brand: 26 115 232;
+        --tw-bg-opacity: 1;
+        --gap: 4px;
+        --pad: calc(var(--gap) * 2);
+      }
+      .var { background: var(--bg); color: var(--alias); padding: var(--pad); }
+      .hsl { background: hsl(var(--card)); color: hsl(0 0% 10%); }
+      .brand { background: rgb(var(--brand)); color: #fff; }
+      .tw { background-color: rgb(255 255 255 / var(--tw-bg-opacity)); }
+      .short { background: var(--bg) no-repeat; border: 1px solid var(--line); }
+      .grad { background-image: linear-gradient(#ffffff, #eeeeee); }
+      .oklch { background: oklch(0.98 0.01 250); color: oklch(0.3 0.05 250); }
+      @layer base { .layered { background: #fafafa !important; } }
+      @media (min-width: 1px) { .mq { background: #eeeeee; } }
+      .nest { color: #222; .inner { background: #ffffff; } }
+      .vivid { background: #ffeb3b; color: #d50000; }
+      .darkpart { background: #111; color: #f5f5f5; }
+      .shadow { box-shadow: 0 0 0 2px #fff, 0 2px 6px rgba(0, 0, 0, 0.3); }
+      .broken { background: linear-gradient(rgba(255,255,255,0), var(--bg, #fff)); background-repeat: no-repeat; }
+      .broken-border { border: 2px solid var(--line); border-top-width: 0; }
+      .blend { mix-blend-mode: multiply; }
+    </style>
+  </head>
+  <body text="#101010">
+    <h1>Light page</h1>
+    <p id="plain">Plain paragraph with a <a id="link" href="#x">link</a>.</p>
+    <div id="site-card" class="site-card">same-origin sheet</div>
+    <div id="cdn-card" class="cdn-card">cross-origin sheet</div>
+    <button id="cdn-btn" class="cdn-btn">button</button>
+    <div id="cdn-var" class="cdn-var">cross-origin variable</div>
+    <div id="cdn-mq" class="cdn-mq">cross-origin media rule</div>
+    <div id="cdn-layer" class="cdn-layer">cross-origin layer</div>
+    <div style="color: #008800"><span id="cdn-order" class="cdn-order">cross-origin rule order</span></div>
+    <div id="cdn-pic" class="cdn-pic">cross-origin url()</div>
+    <div id="var" class="var">variables</div>
+    <div id="hsl" class="hsl">hsl triplet</div>
+    <div id="brand" class="brand">rgb triplet</div>
+    <div id="tw" class="tw">tailwind opacity</div>
+    <div id="short" class="short">shorthand with var</div>
+    <div id="grad" class="grad">gradient</div>
+    <div id="oklch" class="oklch">oklch</div>
+    <div id="layered" class="layered">layer + important</div>
+    <div id="mq" class="mq">media rule</div>
+    <div class="nest"><div id="nest" class="inner">nesting</div></div>
+    <div id="vivid" class="vivid">vivid colours</div>
+    <div id="darkpart" class="darkpart">dark section on a light page</div>
+    <div id="shadow" class="shadow">shadow</div>
+    <div id="broken" class="broken">shorthand split by a later longhand</div>
+    <div id="broken-border" class="broken-border">border split by a later longhand</div>
+    <div id="site-broken" class="site-broken">split shorthand, same-origin sheet</div>
+    <div id="cdn-broken" class="cdn-broken">split shorthand, cross-origin sheet</div>
+    <div id="inline" style="background: #ffffff; color: #333333; border: 1px solid #000">inline style</div>
+    <div id="inlinevar" style="--bg: #f0f0f0; background: var(--bg)">inline variable</div>
+    <table><tr><td id="bgcolor" bgcolor="#ffffff"><font id="font" color="navy">legacy attributes</font></td></tr></table>
+
+    <svg id="svg-default" width="24" height="24" viewBox="0 0 24 24"><path d="M2 2h20v20H2z" /></svg>
+    <svg id="svg-outline" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000"><path id="svg-outline-path" d="M2 2h20v20H2z" /></svg>
+    <svg id="svg-pair" width="24" height="24" viewBox="0 0 24 24"><circle id="svg-disc" cx="12" cy="12" r="11" fill="#222222" /><path id="svg-tick" d="M6 12l4 4 8-8" stroke="#ffffff" fill="none" /></svg>
+    <svg id="svg-var" width="24" height="24" viewBox="0 0 24 24"><path id="svg-var-path" d="M2 2h20v20H2z" fill="var(--ink)" /></svg>
+    <svg id="svg-glyph" width="24" height="24" viewBox="0 0 24 24"><path id="svg-white" d="M2 2h20v20H2z" fill="#ffffff" /></svg>
+
+    <p>
+      <img id="img-logo-x" src="{{CDN}}/logo-dark.png" width="96" height="32" alt="" />
+      <img id="img-logo" src="/logo-dark.png" width="96" height="32" alt="" />
+      <img id="img-color" src="{{CDN}}/logo-color.png" width="96" height="32" alt="" />
+      <img id="img-bright" src="{{CDN}}/bright.png" width="240" height="140" alt="" />
+      <img id="img-photo" src="{{CDN}}/photo.png" width="240" height="140" alt="" />
+      <img id="img-svg" src="{{CDN}}/formula.svg" width="80" height="40" alt="" />
+      <img id="img-gif" src="{{CDN}}/anim.gif" width="40" height="40" alt="" />
+      <img id="img-product" class="blend" src="http://127.0.0.1:8932/product.jpg" width="640" height="560" alt="" />
+      <img id="img-private" src="{{CDN}}/product-private.jpg" width="640" height="560" alt="" />
+    </p>
+
+    <div id="spin" class="spin"></div>
+    <audio id="audio" src="/tone.wav" autoplay loop></audio>
+    <iframe id="frame" src="http://127.0.0.1:8932/frame.html" width="300" height="60"></iframe>
+    <open-box id="open"></open-box>
+    <closed-box id="closed"></closed-box>
+    <adopted-box id="adopted"></adopted-box>
+    <div id="late-host"></div>
+
+    <script>
+      class OpenBox extends HTMLElement {
+        constructor() {
+          super();
+          this.attachShadow({ mode: 'open' }).innerHTML =
+            '<style>.in { background: #ffffff; color: #111111; }</style><div class="in" id="in">open shadow root</div><div id="in-inline" style="background:#fff">inline in shadow</div>';
+        }
+      }
+      class ClosedBox extends HTMLElement {
+        constructor() {
+          super();
+          const root = this.attachShadow({ mode: 'closed' });
+          root.innerHTML = '<style>.in { background: #ffffff; }</style><div class="in">closed shadow root</div>';
+          window.closedProbe = () => getComputedStyle(root.querySelector('.in')).backgroundColor;
+        }
+      }
+      class AdoptedBox extends HTMLElement {
+        connectedCallback() {
+          const root = this.attachShadow({ mode: 'open' });
+          const sheet = new CSSStyleSheet();
+          sheet.replaceSync('.in { background: #ffffff; color: #000000; }');
+          root.adoptedStyleSheets = [sheet];
+          root.innerHTML = '<div class="in" id="in">adopted sheet</div>';
+        }
+      }
+      customElements.define('open-box', OpenBox);
+      customElements.define('closed-box', ClosedBox);
+      customElements.define('adopted-box', AdoptedBox);
+
+      // What a CSS-in-JS library does: rules inserted from script, long after load.
+      window.addLate = () => {
+        const style = document.createElement('style');
+        document.head.append(style);
+        style.sheet.insertRule('.late { background: #ffffff; color: #000000; }');
+        const div = document.createElement('div');
+        div.id = 'late';
+        div.className = 'late';
+        div.textContent = 'inserted rule';
+        const inline = document.createElement('div');
+        inline.id = 'late-inline';
+        inline.style.background = 'white';
+        inline.textContent = 'late inline style';
+        document.getElementById('late-host').append(div, inline);
+        const box = document.createElement('open-box');
+        box.id = 'late-box';
+        document.getElementById('late-host').append(box);
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Lull fixture: slow page</title>
+    <style>
+      body { margin: 0; font: 16px/1.5 sans-serif; background: #ffffff; color: #111111; }
+      .hero { background: #ffffff; padding: 40px; min-height: 300px; }
+    </style>
+    <link rel="stylesheet" href="{{CDN}}/cdn.css?ms=900" />
+  </head>
+  <body>
+    <div class="hero"><h1>White page that loads slowly</h1><p>Its style sheet takes almost a second.</p></div>
+    <div class="cdn-card" style="min-height: 300px">A white card from the slow style sheet.</div>
+    <script>
+      // A late white element, as a single-page app would add after loading.
+      setTimeout(() => {
+        const style = document.createElement('style');
+        document.head.append(style);
+        style.sheet.insertRule('.late { background: #ffffff; min-height: 200px; }');
+        const div = document.createElement('div');
+        div.className = 'late';
+        div.textContent = 'late white block';
+        document.body.prepend(div);
+      }, 1600);
+    </script>
+  </body>
+</html>

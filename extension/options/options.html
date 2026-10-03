@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Lull: site list and help</title>
+    <link rel="stylesheet" href="../popup/popup.css" />
+    <style>
+      body {
+        width: auto;
+        max-width: 620px;
+        margin: 0 auto;
+        padding: 32px 20px;
+        font-size: 15px;
+      }
+      h2 {
+        margin-top: 4px;
+      }
+      ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+      li {
+        margin: 6px 0;
+      }
+      .site {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      button {
+        padding: 5px 12px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--raised);
+        color: var(--fg);
+        font: inherit;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <img src="../icons/icon48.png" alt="" width="32" height="32" />
+      <h1>Lull: site list and help</h1>
+    </header>
+
+    <section>
+      <h2>Sites with their own setting</h2>
+      <p id="empty" class="quiet">No sites yet. Every site uses the Smart theme.</p>
+      <div id="sites"></div>
+    </section>
+
+    <section>
+      <h2>Start over</h2>
+      <p class="quiet">Puts every setting back to how it was when Lull was installed, and forgets the site list.</p>
+      <p style="margin-top: 8px"><button id="reset">Reset all settings</button></p>
+    </section>
+
+    <section>
+      <h2>Things to know</h2>
+      <ul>
+        <li>Hold <kbd>Alt</kbd> and click a paused GIF to play it.</li>
+        <li>A video you start yourself is never paused again.</li>
+        <li>Printing always uses the page's original colours.</li>
+        <li>If one site looks wrong, open Lull on it, choose <strong>More</strong>, then <strong>Simple invert</strong>.</li>
+        <li>To use Lull on files on this computer, open the browser's extension page for Lull and switch on "Allow access to file URLs".</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>What Lull cannot change</h2>
+      <ul>
+        <li>The browser's own pages (new tab, settings, extension store) and its PDF viewer. Browsers do not let extensions edit them.</li>
+        <li>Pages that draw everything onto a canvas, such as some document editors. Simple invert works on these.</li>
+        <li>Background pictures set by a site's style sheet. They are shown as they are.</li>
+        <li>Animations that a page runs from script. Lull stops style-sheet animations, autoplay and GIFs.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Privacy</h2>
+      <p class="quiet">
+        Lull has no account, no analytics and no remote server. Your settings stay in this browser. The only
+        requests it makes are for style sheets and pictures that the page you are on already uses, so that it can
+        read their colours. Requests to other sites carry no cookies.
+      </p>
+    </section>
+
+    <script src="../defaults.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Lull</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <img src="../icons/icon48.png" alt="" width="28" height="28" />
+      <div>
+        <h1>Lull</h1>
+        <p id="host" class="quiet"></p>
+      </div>
+    </header>
+
+    <section id="site-section">
+      <label class="row main">
+        <span>
+          <strong>Dark theme on this site</strong>
+          <small id="status" class="quiet"></small>
+        </span>
+        <input type="checkbox" id="site-on" class="switch" />
+      </label>
+    </section>
+
+    <section>
+      <h2>Colours</h2>
+      <div class="swatches" role="radiogroup" aria-label="Colour palette" id="palettes"></div>
+
+      <label class="slider">
+        <span>Text brightness</span>
+        <input type="range" id="contrast" min="0" max="100" step="5" />
+        <span class="ends quiet"><span>Softer</span><span>Sharper</span></span>
+      </label>
+
+      <label class="slider">
+        <span>Colour strength</span>
+        <input type="range" id="saturation" min="0" max="100" step="5" />
+        <span class="ends quiet"><span>Muted</span><span>Stronger</span></span>
+      </label>
+
+      <label class="slider">
+        <span>Picture brightness</span>
+        <input type="range" id="media" min="50" max="100" step="2" />
+        <span class="ends quiet"><span>Dimmer</span><span>Unchanged</span></span>
+      </label>
+    </section>
+
+    <section>
+      <h2>Calm</h2>
+      <label class="row">
+        <span>Stop animations</span>
+        <input type="checkbox" id="stillness" class="switch" />
+      </label>
+      <label class="row">
+        <span>Pause video and GIFs that start by themselves</span>
+        <input type="checkbox" id="pauseMedia" class="switch" />
+      </label>
+      <label class="row">
+        <span>Reading ruler <small class="quiet">Shades the page except the lines near the pointer</small></span>
+        <input type="checkbox" id="ruler" class="switch" />
+      </label>
+    </section>
+
+    <details>
+      <summary>More</summary>
+      <fieldset id="mode-field">
+        <legend>How this site is themed</legend>
+        <label><input type="radio" name="mode" value="smart" /> Smart <small class="quiet">Recolours the page. Best for most sites.</small></label>
+        <label><input type="radio" name="mode" value="invert" /> Simple invert <small class="quiet">Flips the whole page. Use it if a site looks wrong.</small></label>
+      </fieldset>
+      <fieldset>
+        <legend>Sites that are already dark</legend>
+        <label><input type="radio" name="darkSites" value="soften" /> Soften them <small class="quiet">Removes pure black, pure white and vivid colours.</small></label>
+        <label><input type="radio" name="darkSites" value="leave" /> Leave their colours alone</label>
+      </fieldset>
+      <label class="row">
+        <span>Lull is on <small class="quiet">Switch off to pause Lull on every site</small></span>
+        <input type="checkbox" id="enabled" class="switch" />
+      </label>
+      <p class="quiet foot">
+        Shortcut for this site: <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd><br />
+        <a href="#" id="options">Site list and help</a>
+      </p>
+    </details>
+
+    <script src="../defaults.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
