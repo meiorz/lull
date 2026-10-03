@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>How a lighthouse keeps its time - Harbour Notes</title>
+    <!-- A made-up article site, used only to take the store screenshots. Everything on it was
+         written and drawn for this purpose, so the screenshots contain nobody else's work. -->
+    <style>
+      :root { --ink: #1c2530; --quiet: #5b6875; --line: #e3e7ec; --link: #0b57d0; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #ffffff; color: var(--ink); font: 17px/1.6 'Segoe UI', system-ui, sans-serif; }
+      a { color: var(--link); }
+      .top { display: flex; align-items: center; gap: 28px; height: 68px; padding: 0 40px; border-bottom: 1px solid var(--line); background: #ffffff; }
+      .top nav { display: flex; gap: 22px; margin-left: 12px; }
+      .top nav a { color: #33475b; text-decoration: none; font-weight: 600; font-size: 15px; }
+      .live { margin-left: auto; padding: 3px 10px; border-radius: 4px; background: #e5322d; color: #ffffff; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+      .cta { padding: 9px 18px; border: 0; border-radius: 6px; background: #1463d8; color: #ffffff; font: inherit; font-size: 15px; font-weight: 600; }
+      .page { display: grid; grid-template-columns: minmax(0, 720px) 320px; gap: 56px; max-width: 1176px; margin: 0 auto; padding: 36px 40px 56px; }
+      .kicker { margin: 0 0 6px; color: #b3541e; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+      h1 { margin: 0 0 10px; font: 700 40px/1.15 Georgia, 'Times New Roman', serif; }
+      h2 { margin: 34px 0 8px; font: 700 26px/1.25 Georgia, 'Times New Roman', serif; }
+      h3 { margin: 0 0 10px; font-size: 16px; }
+      .byline { margin: 0 0 18px; color: var(--quiet); font-size: 15px; }
+      .lead { font-size: 20px; line-height: 1.5; }
+      figure { margin: 24px 0; }
+      figure img { display: block; width: 100%; height: auto; border-radius: 8px; }
+      figure.chart img { border: 1px solid var(--line); }
+      figcaption { margin-top: 8px; color: var(--quiet); font-size: 14px; }
+      .note { margin: 24px 0; padding: 14px 18px; border-left: 4px solid #f2b705; border-radius: 4px; background: #fff4cc; }
+      table { width: 100%; border-collapse: collapse; font-size: 15px; }
+      th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+      th { background: #f3f5f8; }
+      .card { margin-bottom: 20px; padding: 18px 20px; border: 1px solid var(--line); border-radius: 10px; background: #f7f8fa; }
+      .card ul { margin: 0; padding-left: 18px; }
+      .card li { margin: 6px 0; }
+      .signup { display: flex; gap: 8px; margin-top: 10px; }
+      .signup input { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid #c6ced8; border-radius: 6px; background: #ffffff; color: var(--ink); font: inherit; font-size: 15px; }
+      .tag { display: inline-block; padding: 1px 8px; border-radius: 10px; background: #d9f2e3; color: #11643a; font-size: 13px; font-weight: 600; }
+      footer { padding: 26px 40px; background: #17212b; color: #c9d3dd; font-size: 14px; }
+      @media (max-width: 900px) {
+        .page { grid-template-columns: minmax(0, 1fr); padding: 24px 24px 40px; }
+        aside, .top nav, .live { display: none; }
+        .top { padding: 0 24px; }
+        .cta { margin-left: auto; }
+        h1 { font-size: 32px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <a href="#"><img src="logo.svg" alt="Harbour Notes" width="190" height="36" /></a>
+      <nav><a href="#">Coast</a><a href="#">Weather</a><a href="#">Boats</a><a href="#">Wildlife</a></nav>
+      <span class="live">Live</span>
+      <button class="cta">Subscribe</button>
+    </header>
+
+    <div class="page">
+      <article>
+        <p class="kicker">Coast &middot; 6 minute read</p>
+        <h1>How a lighthouse keeps its time</h1>
+        <p class="byline">By the Harbour Notes desk &middot; Updated 2 October</p>
+        <p class="lead">
+          Every lighthouse flashes in its own pattern. Sailors call it the character of the light, and it lets them
+          tell one headland from another on a dark night.
+        </p>
+        <figure>
+          <img src="scene.svg" alt="A lighthouse on a headland at dusk" width="720" height="300" />
+          <figcaption>The light at Tern Point, seen from the harbour wall.</figcaption>
+        </figure>
+        <p>
+          The lamp itself never switches off. A <a href="#">rotating lens</a> gathers its light into a few narrow beams,
+          and each beam sweeps past the horizon like the spoke of a wheel. From a boat, a beam passing over looks
+          like a flash. The time between flashes is set by how fast the lens turns.
+        </p>
+        <p>
+          Older lights were turned by a weight on a chain, wound up by hand like a clock. The keeper climbed the
+          tower every few hours to wind it again. Today a small electric motor does the same work, and a
+          <a href="#">timer</a> checks the speed.
+        </p>
+        <div class="note">
+          <strong>Good to know.</strong> A light that shines longer than it is dark is called occulting. A light that
+          is dark longer than it shines is called flashing.
+        </div>
+        <h2>Reading the pattern</h2>
+        <p>
+          Charts print the pattern next to each light. "Fl(2) 20s" means two flashes, repeated every twenty
+          seconds. Count the flashes, time the gap with a watch, and the chart tells you which light you are
+          looking at.
+        </p>
+        <figure class="chart">
+          <img src="chart.svg" alt="Diagram of two flashes repeated every twenty seconds" width="720" height="220" />
+          <figcaption>Light and dark periods of a "Fl(2) 20s" light.</figcaption>
+        </figure>
+        <table>
+          <tr><th>Light</th><th>Pattern</th><th>Seen from</th></tr>
+          <tr><td>Tern Point</td><td>Fl(2) 20s</td><td>18 miles</td></tr>
+          <tr><td>Saddle Rock</td><td>Oc 6s</td><td>11 miles</td></tr>
+          <tr><td>Marram Spit</td><td>Fl 5s</td><td>9 miles</td></tr>
+        </table>
+      </article>
+
+      <aside>
+        <div class="card">
+          <h3>Tide times today</h3>
+          <table>
+            <tr><td>High</td><td>05:12</td><td><span class="tag">4.6 m</span></td></tr>
+            <tr><td>Low</td><td>11:31</td><td>0.9 m</td></tr>
+            <tr><td>High</td><td>17:40</td><td><span class="tag">4.8 m</span></td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3>Related</h3>
+          <ul>
+            <li><a href="#">Why fog signals sound so low</a></li>
+            <li><a href="#">The last keeper of Saddle Rock</a></li>
+            <li><a href="#">How to read a sea chart</a></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Weekly letter</h3>
+          One short email every Friday.
+          <div class="signup"><input type="email" placeholder="Email address" /><button class="cta">Join</button></div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>Harbour Notes is a made-up publication.</footer>
+  </body>
+</html>

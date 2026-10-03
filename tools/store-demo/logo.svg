@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="72" viewBox="0 0 380 72">
+  <g fill="#1b2430">
+    <path d="M20 60 26 24h16l6 36z" />
+    <rect x="25" y="13" width="18" height="11" rx="2" />
+    <path d="M29 7h10l4 6H25z" />
+    <rect x="12" y="60" width="44" height="5" rx="2.5" />
+    <text x="70" y="48" font-family="Georgia, 'Times New Roman', serif" font-size="35" font-weight="700">Harbour Notes</text>
+  </g>
+</svg>

@@ -7,6 +7,9 @@ vivid colour, no movement you did not ask for, and a settings panel with few cho
 - `extension/` is the extension. It has no dependencies and no build step.
 - `test/` loads it into real Chrome and checks what pages look like afterwards.
 - `tools/make-assets.mjs` regenerates the icons and the curtain style sheets.
+- `store/` holds the Chrome Web Store listing: screenshots, promo image, description and
+  privacy policy. `tools/make-store.mjs` regenerates the pictures from the made-up site in
+  `tools/store-demo/`.
 
 ## Install
 

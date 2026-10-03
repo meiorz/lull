@@ -52,7 +52,9 @@ function png(size, pixels) {
   ]);
 }
 
-function icon(size) {
+// `pad` leaves that many transparent pixels on every side.
+function icon(size, pad = 0) {
+  const inner = size - 2 * pad;
   const bg = [35, 38, 45];
   const moon = [217, 212, 199];
   const pixels = Buffer.alloc(size * size * 4);
@@ -71,8 +73,8 @@ function icon(size) {
       let crescent = 0;
       for (let sy = 0; sy < N; sy++) {
         for (let sx = 0; sx < N; sx++) {
-          const x = (px + (sx + 0.5) / N) / size;
-          const y = (py + (sy + 0.5) / N) / size;
+          const x = (px - pad + (sx + 0.5) / N) / inner;
+          const y = (py - pad + (sy + 0.5) / N) / inner;
           if (!insideSquare(x, y)) continue;
           square++;
           if (insideMoon(x, y)) crescent++;
@@ -87,7 +89,9 @@ function icon(size) {
   return png(size, pixels);
 }
 
+// The 128 px icon is the one the Chrome Web Store shows. Its guidance is 96 x 96 artwork
+// with 16 transparent pixels on each side; the smaller icons fill their square.
 for (const size of [16, 32, 48, 128]) {
-  writeFileSync(join(ext, 'icons', `icon${size}.png`), icon(size));
+  writeFileSync(join(ext, 'icons', `icon${size}.png`), icon(size, size === 128 ? 16 : 0));
   console.log(`icon${size}.png`);
 }
